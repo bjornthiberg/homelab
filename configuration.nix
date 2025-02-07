@@ -32,12 +32,39 @@
 
   # Installed packages
   environment.systemPackages = with pkgs; [
-    vim git curl wget htop
+    vim git curl wget htop kubectl k3s
   ];
 
   # firewall, auth
   networking.firewall.enable = true;
-  networking.firewall.allowedTCPPorts = [ 22 ];
+  networking.firewall.allowedTCPPorts = [ 
+    22 #ssh 
+    6443 # k3s
+    80 
+    443
+  ];
+
+  networking.firewall.allowedUDPPorts = [
+    8472 # Flannel
+  ];
+
+  # k3s
+  services.k3s = {
+    enable = true;
+    role = "server";
+
+    extraArgs = [
+      "--disable=traefik"   # Disable built-in Traefik
+    ];
+
+    # Enable Flannel (default CNI) and service networking
+    extraFlags = "--flannel-backend=host-gw";
+
+    # Automatically set up node token authentication for agents
+    tokenFile = "/var/lib/rancher/k3s/server/node-token";
+
+    serviceWants = [ "network-online.target" ];
+  };
 
   # Set system compatibility version
   system.stateVersion = "24.11"; 
