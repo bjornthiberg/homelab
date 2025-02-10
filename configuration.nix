@@ -22,7 +22,7 @@
   services.openssh.enable = true;
   users.users.dude = {
     isNormalUser = true;
-    extraGroups = [ "wheel" ]; # Allows `sudo`
+    extraGroups = [ "docker" "wheel" ]; # Allows `sudo`
     initialPassword = "changeme"; # Change after login
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGLBky0/UL1HffqLhIaiyUI7/kMJoSXLRzB6dOnCs1vo"
@@ -32,8 +32,10 @@
 
   # Installed packages
   environment.systemPackages = with pkgs; [
-    vim git curl wget htop kubectl k3s
+    vim git curl wget htop docker-compose
   ];
+
+  virtualisation.docker.enable = true;
 
   # firewall, auth
   networking.firewall.enable = true;
@@ -43,28 +45,6 @@
     80 
     443
   ];
-
-  networking.firewall.allowedUDPPorts = [
-    8472 # Flannel
-  ];
-
-  # k3s
-  services.k3s = {
-    enable = true;
-    role = "server";
-
-    extraArgs = [
-      "--disable=traefik"   # Disable built-in Traefik
-    ];
-
-    # Enable Flannel (default CNI) and service networking
-    extraFlags = "--flannel-backend=host-gw";
-
-    # Automatically set up node token authentication for agents
-    tokenFile = "/var/lib/rancher/k3s/server/node-token";
-
-    serviceWants = [ "network-online.target" ];
-  };
 
   # Set system compatibility version
   system.stateVersion = "24.11"; 
