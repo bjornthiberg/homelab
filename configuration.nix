@@ -41,9 +41,15 @@
   networking.firewall.enable = true;
   networking.firewall.allowedTCPPorts = [ 
     22 #ssh 
-    6443 # k3s
     80 
+    8080
     443
+    53
+    3000
+  ];
+
+  networking.firewall.allowedUDPPorts = [
+    53
   ];
 
   # Set system compatibility version
