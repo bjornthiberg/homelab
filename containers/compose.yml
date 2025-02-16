@@ -1,0 +1,67 @@
+networks:
+  macvlan_net:
+    driver: macvlan
+    driver_opts:
+      parent: eno1
+    ipam:
+      config:
+        - subnet: "192.168.1.0/24"
+          gateway: "192.168.1.1"
+
+services:
+  adguard:
+    image: adguard/adguardhome
+    container_name: adguardhome
+    restart: unless-stopped
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+      - "80:80/tcp"
+      - "443:443/tcp"
+      - "3000:3000/tcp"
+    networks:
+      macvlan_net:
+        ipv4_address: "192.168.1.6"
+    volumes:
+      - ./adguardhome/work:/opt/adguardhome/work
+      - ./adguardhome/conf:/opt/adguardhome/conf
+    environment:
+      - TZ=Europe/Stockholm
+  nginx-proxy-manager:
+    image: 'jc21/nginx-proxy-manager:latest'
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '443:443'
+      - '81:81' # admin port
+    volumes:
+      - ./nginx-proxy-manager/data:/data
+      - ./nginx-proxy-manager/letsencrypt:/etc/letsencrypt
+    environment:
+      - TZ=Europe/Stockholm
+    networks:
+      macvlan_net:
+        ipv4_address: "192.168.1.5"
+  frej:
+    image: ghcr.io/bjornthiberg/frej_backend:latest
+    container_name: frej_backend
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    networks:
+      macvlan_net:
+        ipv4_address: "192.168.1.9"
+    volumes:
+      - /var/lib/project_frej/server/appsettings.json:/app/appsettings.json:ro
+      - /var/lib/project_frej/server/sensor_data.db:/app/sensor_data.db
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+  unifi:
+    image: lscr.io/linuxserver/unifi-network-application:latest
+    restart: unless-stopped
+    ports:
+      - '8443:8443'
+    networks:
+      macvlan_net:
+        ipv4_address: "192.168.1.11"
+
