@@ -18,6 +18,9 @@
   i18n.defaultLocale = "en_US.UTF-8";
   console.keyMap = "sv-latin1";
 
+  # Experimental Features
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+
   # Enable OpenSSH for remote access
   services.openssh.enable = true;
   users.users.dude = {
@@ -47,6 +50,7 @@
     53
     3000
     5000
+    8443
   ];
 
   networking.firewall.allowedUDPPorts = [
